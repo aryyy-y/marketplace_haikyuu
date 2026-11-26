@@ -16,7 +16,7 @@ Cada integrante crea su cuenta de GitHub. Las demás cuentas (Railway, Supabase,
    git commit -m "Esquema inicial de base de datos"
    git push
    ```
-5. En el `README.md`, llenar la tabla de integrantes. El tema ya está especificado: *Marketplace de fotografías de anime, enfocado en Haikyuu!!*
+5. En el `README.md`, llenar la tabla de integrantes. El tema ya está especificado: *Marketplace enfocado en Haikyuu!!*
 
 ## 2. Railway (backend y base de datos)
 

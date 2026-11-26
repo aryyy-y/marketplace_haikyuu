@@ -4,10 +4,11 @@ Marketplace de mercancía del anime **Haikyuu!!** (figuras, jerseys, pósters y 
 
 ## Integrantes
 
-| Nombre completo | Matrícula | Usuario de GitHub |
-|---|---|---|
-| _(completar)_ | _(completar)_ | aryyy-y |
-| _(completar)_ | _(completar)_ | _(completar)_ |
+|         Nombre completo       | Matrícula | Usuario de GitHub |
+|-------------------------------|-----------|-------------------|
+| Areli Maricela Lopez Garcia   |   12777   |    aryyy-y        |
+| Jose Eduardo Tobias Cedillo   |   13129   |    Eduardo-Tobias |
+| Stephany Marlina Mejia Valadez|   4016    |    StephanyMejia  |
 
 ## Stack
 
