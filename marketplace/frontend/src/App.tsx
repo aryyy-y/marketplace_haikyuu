@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from './api'
 import CartDrawer from './components/CartDrawer'
 import CheckoutModal, { Confirmacion } from './components/CheckoutModal'
@@ -11,6 +11,17 @@ const NOMBRES_CAT: Record<string, string> = {
   figura: 'Figuras', jersey: 'Jerseys', poster: 'Pósters', manga: 'Manga',
 }
 
+interface ProductoSugerencia {
+  id: string | number
+  nombre: string
+  equipo?: string
+  precio?: number
+  precioBase?: number
+  imagen?: string
+  img?: string
+  variantes?: Array<{ precio?: number }>
+}
+
 export default function App() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [filtros, setFiltros] = useState<Filtros>({ q: '', categoria: '', equipo: '' })
@@ -20,6 +31,10 @@ export default function App() {
   const [verPago, setVerPago] = useState(false)
   const [orden, setOrden] = useState<Orden | null>(null)
   const [aviso, setAviso] = useState<{ texto: string; error: boolean } | null>(null)
+  const [verSugerencias, setVerSugerencias] = useState(false)
+
+  const searchBoxRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   const avisar = (texto: string, error = false) => {
     setAviso({ texto, error })
@@ -50,6 +65,23 @@ export default function App() {
     return () => clearTimeout(t)
   }, [cargarProductos])
 
+  // Cierra el desplegable si haces clic fuera del buscador
+  useEffect(() => {
+    const onClickFuera = (e: MouseEvent) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setVerSugerencias(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickFuera)
+    return () => document.removeEventListener('mousedown', onClickFuera)
+  }, [])
+
+  const seleccionarSugerencia = (nombre: string) => {
+    setFiltros({ ...filtros, q: nombre })
+    setVerSugerencias(false)
+    gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   const confirmarCompra = async (metodo: string, tarjeta?: string) => {
     try {
       const o = await api.comprar(metodo, tarjeta)
@@ -63,17 +95,77 @@ export default function App() {
     }
   }
 
+  const hayTexto = filtros.q.trim().length > 0
+
   return (
     <>
       <header className="topbar">
         <div className="brand">🏐 <span>Haikyuu!!</span> Market</div>
-        <input
-          className="search"
-          type="search"
-          placeholder="Busca un personaje, equipo o producto…"
-          value={filtros.q}
-          onChange={(e) => setFiltros({ ...filtros, q: e.target.value })}
-        />
+
+        <div className="search-wrap" ref={searchBoxRef}>
+          <input
+            className="search"
+            type="search"
+            placeholder="Busca un personaje, equipo o producto…"
+            value={filtros.q}
+            onFocus={() => setVerSugerencias(true)}
+            onChange={(e) => {
+              setFiltros({ ...filtros, q: e.target.value })
+              setVerSugerencias(true)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setVerSugerencias(false)
+                gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+              if (e.key === 'Escape') setVerSugerencias(false)
+            }}
+          />
+
+          {verSugerencias && hayTexto && (
+            <div className="search-dropdown">
+              <div className="search-dropdown-head">
+                <span>Resultados para “{filtros.q.trim()}”</span>
+                <span>{productos.length}</span>
+              </div>
+
+              {productos.length === 0 ? (
+                <div className="search-empty">Sin coincidencias en la cancha 🏐</div>
+              ) : (
+                <ul className="search-list">
+                  {productos.slice(0, 6).map((p) => {
+                    const item = p as unknown as ProductoSugerencia
+                    const imgSrc = item.imagen ?? item.img ?? ''
+                    const precioBase =
+                      item.variantes?.[0]?.precio ?? item.precio ?? item.precioBase ?? 0
+
+                    return (
+                      <li key={String(item.id)}>
+                        <button
+                          type="button"
+                          className="search-item"
+                          onClick={() => seleccionarSugerencia(item.nombre)}
+                        >
+                          {imgSrc ? (
+                            <img src={imgSrc} alt={item.nombre} className="search-thumb" />
+                          ) : (
+                            <span className="search-thumb-placeholder">🏐</span>
+                          )}
+                          <div className="search-info">
+                            <strong>{item.nombre}</strong>
+                            <small>{item.equipo ?? 'Haikyuu!!'}</small>
+                          </div>
+                          <span className="search-price">${Number(precioBase).toFixed(2)}</span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+
         <button className="cart-btn" onClick={() => setVerCarrito(true)}>
           🛒 Carrito {carrito.piezas > 0 && <b className="badge">{carrito.piezas}</b>}
         </button>
@@ -104,7 +196,7 @@ export default function App() {
           </div>
         </aside>
 
-        <div className="grid">
+        <div className="grid" ref={gridRef}>
           {productos.length === 0 && <p className="empty">No encontramos nada con esos filtros 🥲</p>}
           {productos.map((p) => (
             <ProductCard
