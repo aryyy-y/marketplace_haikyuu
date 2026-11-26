@@ -16,6 +16,25 @@ export const COLORES: Record<string, [string, string]> = {
   Inarizaki: ['#171717', '#a3a3a3'],
 }
 
+const IMAGENES_POR_ID: Record<string, string> = {
+  'f-hinata': '/images/hinata-salto.jpg',
+  'f-kageyama': '/images/kageyama-rey.jpg',
+  'f-nishinoya': '/images/nishinoya-libero.jpg',
+  'f-kuroo': '/images/kuroo-bloqueo.jpg',
+  'f-oikawa': '/images/oikawa-saque.jpg',
+  'f-bokuto': '/images/bokuto-remate.jpg',
+  'j-karasuno': '/images/jersey-karasuno.jpg',
+  'j-nekoma': '/images/jersey-nekoma.jpg',
+  'j-aoba': '/images/jersey-aoba.jpg',
+  'j-fukurodani': '/images/jersey-fukurodani.jpg',
+  'p-karasuno': '/images/poster-karasuno.jpg',
+  'p-shiratorizawa': '/images/poster-shiratorizawa.jpg',
+  'p-inarizaki': '/images/poster-inarizaki.jpg',
+  'm-01': '/images/manga-vol1.jpg',
+  'm-10': '/images/manga-basurero.jpg',
+  'm-45': '/images/manga-final.jpg',
+}
+
 interface Props {
   producto: Producto
   onAgregar: (producto: Producto, opcion: string) => void
@@ -23,14 +42,25 @@ interface Props {
 
 export default function ProductCard({ producto, onAgregar }: Props) {
   const [opcion, setOpcion] = useState(producto.opciones[0].nombre)
+  const [imgError, setImgError] = useState(false)
   const [a, b] = COLORES[producto.equipo] ?? ['#222', '#888']
   const precio = producto.opciones.find((o) => o.nombre === opcion)?.precio ?? producto.precioBase
   const agotado = producto.stock === 0
+  const rutaImagen = IMAGENES_POR_ID[producto.id]
 
   return (
     <article className="card">
       <div className="card-art" style={{ background: `linear-gradient(135deg, ${a}, ${b})` }}>
-        <span className="card-icon">{ICONOS[producto.categoria]}</span>
+        {rutaImagen && !imgError ? (
+          <img
+            src={rutaImagen}
+            alt={producto.nombre}
+            className="card-img"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <span className="card-icon">{ICONOS[producto.categoria]}</span>
+        )}
         <span className="chip">{producto.equipo}</span>
       </div>
       <div className="card-body">
