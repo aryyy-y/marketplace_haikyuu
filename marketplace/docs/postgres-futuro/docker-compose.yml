@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16
+    container_name: marketplace_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: marketplace
+      POSTGRES_PASSWORD: cambia_esta_clave
+      POSTGRES_DB: marketplace
+    ports:
+     - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+volumes:
+  pgdata:
